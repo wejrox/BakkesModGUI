@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 
+/** Futureproof Modularity for custom plugins by reading commands from text files in a specific folder. */
 namespace ConfigChanger
 {
     public partial class Form1 : Form
@@ -330,13 +331,23 @@ namespace ConfigChanger
         {
             Console.WriteLine(Application.StartupPath);
             ProcessStartInfo injector = new ProcessStartInfo(Application.StartupPath + "\\BakkesModInjector.exe");
+            injector.Verb = "runas";
             Process.Start(injector);
         }
 
         // Loading the config in RocketLeague
         private void btnApplyConfig_Click(object sender, EventArgs e)
         {
+            try
+            {
+                // Get first process with this name
+                Process p = Process.GetProcessesByName("rocketleague")[0];
 
+                IntPtr pointer = p.Handle;
+                SetForegroundWindow(pointer);
+                // Send the keys to rocket league
+                SendKeys.SendWait("`exec config{ENTER}`");
+            } catch (IndexOutOfRangeException) { MessageBox.Show("Rocket League must be launched \nto apply the configuration in-game"); }
         }
     }
 }
