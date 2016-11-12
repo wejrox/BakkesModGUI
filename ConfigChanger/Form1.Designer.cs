@@ -72,7 +72,7 @@
             this.btnSave.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnSave.Location = new System.Drawing.Point(493, 315);
             this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(77, 23);
+            this.btnSave.Size = new System.Drawing.Size(75, 23);
             this.btnSave.TabIndex = 0;
             this.btnSave.Text = "Save Config";
             this.btnSave.UseVisualStyleBackColor = false;
@@ -84,7 +84,7 @@
             this.cmbKey1.DropDownWidth = 200;
             this.cmbKey1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmbKey1.FormattingEnabled = true;
-            this.cmbKey1.Location = new System.Drawing.Point(289, 38);
+            this.cmbKey1.Location = new System.Drawing.Point(277, 38);
             this.cmbKey1.MaxDropDownItems = 5;
             this.cmbKey1.Name = "cmbKey1";
             this.cmbKey1.Size = new System.Drawing.Size(208, 21);
@@ -96,7 +96,7 @@
             this.cmbKey2.DropDownWidth = 200;
             this.cmbKey2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmbKey2.FormattingEnabled = true;
-            this.cmbKey2.Location = new System.Drawing.Point(289, 65);
+            this.cmbKey2.Location = new System.Drawing.Point(277, 65);
             this.cmbKey2.MaxDropDownItems = 5;
             this.cmbKey2.Name = "cmbKey2";
             this.cmbKey2.Size = new System.Drawing.Size(208, 21);
@@ -108,7 +108,7 @@
             this.cmbKey4.DropDownWidth = 200;
             this.cmbKey4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmbKey4.FormattingEnabled = true;
-            this.cmbKey4.Location = new System.Drawing.Point(289, 119);
+            this.cmbKey4.Location = new System.Drawing.Point(277, 119);
             this.cmbKey4.MaxDropDownItems = 5;
             this.cmbKey4.Name = "cmbKey4";
             this.cmbKey4.Size = new System.Drawing.Size(208, 21);
@@ -132,7 +132,7 @@
             this.btnSpeedAdd.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Gainsboro;
             this.btnSpeedAdd.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnSpeedAdd.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSpeedAdd.Location = new System.Drawing.Point(396, 45);
+            this.btnSpeedAdd.Location = new System.Drawing.Point(396, 43);
             this.btnSpeedAdd.Name = "btnSpeedAdd";
             this.btnSpeedAdd.Size = new System.Drawing.Size(23, 21);
             this.btnSpeedAdd.TabIndex = 7;
@@ -162,7 +162,7 @@
             this.cmbKey3.DropDownWidth = 200;
             this.cmbKey3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmbKey3.FormattingEnabled = true;
-            this.cmbKey3.Location = new System.Drawing.Point(289, 92);
+            this.cmbKey3.Location = new System.Drawing.Point(277, 92);
             this.cmbKey3.MaxDropDownItems = 5;
             this.cmbKey3.Name = "cmbKey3";
             this.cmbKey3.Size = new System.Drawing.Size(208, 21);
@@ -299,11 +299,12 @@
             // 
             this.label8.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(19, 4);
+            this.label8.Location = new System.Drawing.Point(19, 5);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(170, 26);
+            this.label8.Size = new System.Drawing.Size(170, 39);
             this.label8.TabIndex = 22;
-            this.label8.Text = "To apply settings in training mode, \r\nClick \"Reload Config\"";
+            this.label8.Text = "To apply settings in training mode, \r\nClick \"Save Config\", then\r\nClick \"Apply Con" +
+    "fig\"";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // panel1
@@ -314,7 +315,7 @@
             this.panel1.Controls.Add(this.label8);
             this.panel1.Location = new System.Drawing.Point(171, 203);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(213, 41);
+            this.panel1.Size = new System.Drawing.Size(213, 53);
             this.panel1.TabIndex = 23;
             // 
             // cmbCommand3
@@ -323,7 +324,7 @@
             this.cmbCommand3.DropDownWidth = 200;
             this.cmbCommand3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmbCommand3.FormattingEnabled = true;
-            this.cmbCommand3.Location = new System.Drawing.Point(75, 92);
+            this.cmbCommand3.Location = new System.Drawing.Point(63, 92);
             this.cmbCommand3.MaxDropDownItems = 5;
             this.cmbCommand3.Name = "cmbCommand3";
             this.cmbCommand3.Size = new System.Drawing.Size(208, 21);
@@ -335,7 +336,7 @@
             this.cmbCommand4.DropDownWidth = 200;
             this.cmbCommand4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmbCommand4.FormattingEnabled = true;
-            this.cmbCommand4.Location = new System.Drawing.Point(75, 119);
+            this.cmbCommand4.Location = new System.Drawing.Point(63, 119);
             this.cmbCommand4.MaxDropDownItems = 5;
             this.cmbCommand4.Name = "cmbCommand4";
             this.cmbCommand4.Size = new System.Drawing.Size(208, 21);
@@ -347,7 +348,7 @@
             this.cmbCommand2.DropDownWidth = 200;
             this.cmbCommand2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmbCommand2.FormattingEnabled = true;
-            this.cmbCommand2.Location = new System.Drawing.Point(75, 65);
+            this.cmbCommand2.Location = new System.Drawing.Point(63, 65);
             this.cmbCommand2.MaxDropDownItems = 5;
             this.cmbCommand2.Name = "cmbCommand2";
             this.cmbCommand2.Size = new System.Drawing.Size(208, 21);
@@ -359,7 +360,7 @@
             this.cmbCommand1.DropDownWidth = 200;
             this.cmbCommand1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmbCommand1.FormattingEnabled = true;
-            this.cmbCommand1.Location = new System.Drawing.Point(75, 38);
+            this.cmbCommand1.Location = new System.Drawing.Point(63, 38);
             this.cmbCommand1.MaxDropDownItems = 5;
             this.cmbCommand1.Name = "cmbCommand1";
             this.cmbCommand1.Size = new System.Drawing.Size(208, 21);
@@ -389,7 +390,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(72, 22);
+            this.label2.Location = new System.Drawing.Point(60, 22);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(37, 13);
             this.label2.TabIndex = 30;
@@ -398,7 +399,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(286, 22);
+            this.label3.Location = new System.Drawing.Point(274, 22);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(61, 13);
             this.label3.TabIndex = 31;
