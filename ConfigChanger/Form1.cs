@@ -23,6 +23,7 @@ namespace ConfigChanger
         private int otherOptions = 2; // Amount of other options that are saved (for reading from file)
         private double gameSpeed = 1.0f; // Holder for the GUI
         private int numComments = 2; // Amount of comments in the file
+        private string bindingsPath = @"plugins\commands";
 
         private string[] keycodes = new string[]
         {
@@ -93,10 +94,7 @@ namespace ConfigChanger
             "NumPadZero", "Decimal"
         };
 
-        string[] commands = new string[] {
-            "toggleconsole", "previewshot", "redirect_shoot", "rebound_shoot",
-            "defender_start", "defender_stop", "respawnboost", "training_predictball"
-        };
+        string[] commands;
 
         string[] maps = new string[]
         {
@@ -112,6 +110,8 @@ namespace ConfigChanger
         public Form1()
         {
             InitializeComponent();
+            initCommands();
+
             // Add references to default boxes
             commandBoxes.Add(cmbCommand1);
             commandBoxes.Add(cmbCommand2);
@@ -123,8 +123,12 @@ namespace ConfigChanger
             keyBoxes.Add(cmbKey3);
             keyBoxes.Add(cmbKey4);
 
-            foreach (ComboBox cmb in commandBoxes)
-                cmb.Items.AddRange(commands);
+            try
+            {
+                foreach (ComboBox cmb in commandBoxes)
+                    cmb.Items.AddRange(commands);
+            }
+            catch (ArgumentNullException) { MessageBox.Show("No Command files are present in \n'" + bindingsPath + "'", "No Problem."); }
             foreach (ComboBox cmb in keyBoxes)
                 cmb.Items.AddRange(keycodes);
 
@@ -215,7 +219,7 @@ namespace ConfigChanger
                 try
                 {
                     linesFromFile = File.ReadAllLines(Application.StartupPath + @"\cfg\config.cfg");                
-                } catch (Exception) { MessageBox.Show("Something went wrong reading the cfg. Ensure that it is in cfg\\config.cfg"); return; }
+                } catch (Exception) { MessageBox.Show("Something went wrong reading the cfg. Ensure that it is in cfg\\config.cfg", "Oops!"); return; }
                 
                 // Format the result for the first tab (Bindings)
                 for (int i = keycodes.Length + numComments; i < linesFromFile.Length - otherOptions; i++)
@@ -229,7 +233,9 @@ namespace ConfigChanger
                 }
 
                 int x = 0;
-                for (int i = 0; i < values.Length; i+=2)
+                bool pluginMissing = false;
+                string missingPluginsNames = "";
+                for (int i = 0; i < values.Length; i += 2)
                 { 
                     keyBoxes[x].SelectedIndex = keyBoxes[x].Items.IndexOf(values[i]);
                     x++;
@@ -237,10 +243,17 @@ namespace ConfigChanger
 
                 x = 0;
                 for (int i = 1; i < values.Length; i += 2)
-                {
+                {                    
                     commandBoxes[x].SelectedIndex = commandBoxes[x].Items.IndexOf(values[i]);
+                    if (commandBoxes[x].SelectedIndex == -1)
+                    {
+                        missingPluginsNames += "\n" + values[i];
+                        pluginMissing = true;
+                    }
                     x++;
                 }
+                if (pluginMissing)
+                    MessageBox.Show("One or more the plugins that you have bound actions from \nno longer exists in the 'plugins' folder.\nAll Command Bindings from this plugin will be discarded if you save.\n\nCommands missing:" + missingPluginsNames, "Noooooo!");
                 // ^^^ ALL WORKING ^^^
 
                 // Other options are after all the generics and the dynamics
@@ -258,14 +271,14 @@ namespace ConfigChanger
                     cmbGameSpeed.SelectedIndex = cmbGameSpeed.Items.IndexOf(values2[0]);
                     gameSpeed = double.Parse(values2[1]);
                 }
-                catch (Exception) { MessageBox.Show("Game Speed found is not a double (e.g 1.0)\n Or there was an issue with the line it was bound on"); }
+                catch (Exception) { MessageBox.Show("Game Speed found is not a double (e.g 1.0)\n Or there was an issue with the line it was bound on", "No Way!"); }
 
                 txtGameSpeed.Text = "" + gameSpeed;
                 // Set map to load
                 cmbMaps.SelectedIndex = cmbMaps.Items.IndexOf(values2[2]);
                 
     
-            } catch (Exception) { MessageBox.Show("Your config file is outdated. \nPlease backup your config and click 'Save' to generate a new one."); }
+            } catch (Exception) { MessageBox.Show("Your config file is outdated. \nPlease backup your config and click 'Save' to generate a new one.", "Nice Shot!"); }
         }
 
         // Show the commands window
@@ -347,7 +360,38 @@ namespace ConfigChanger
                 SetForegroundWindow(pointer);
                 // Send the keys to rocket league
                 SendKeys.SendWait("`exec config{ENTER}`");
-            } catch (IndexOutOfRangeException) { MessageBox.Show("Rocket League must be launched \nto apply the configuration in-game"); }
+            } catch (IndexOutOfRangeException) { MessageBox.Show("Rocket League must be launched \nto apply the configuration in-game", "Whoops..."); }
+        }
+
+        private void initCommands()
+        {
+            List<string> newCommands = new List<string>();
+            string[] fileCommands = null; // Required in case something is wrong with the commands in the file
+            //Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory + @"plugins\commands\");
+            string[] files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + bindingsPath);
+            foreach (string s in files)
+            {
+                Console.WriteLine(s);
+                if (s.EndsWith(".bnd"))
+                {
+                    // Get commands
+                    try
+                    {
+                        fileCommands = File.ReadAllLines(s);
+
+                        foreach (string t in fileCommands)
+                        {
+                            if (!t.Contains(" "))
+                                newCommands.Add(t);
+                            else
+                                MessageBox.Show("Could not add command '" + t + "' (Contains a space)\n\nCommands file: " + s + "\n\nAll other commands from the file have been added.", "Savage!");
+                        }
+                    }
+                    catch (Exception) { MessageBox.Show("There is something wrong with Commands file \n" + s, "What a save!"); }
+                }
+            }
+
+            commands = newCommands.ToArray();
         }
     }
 }
