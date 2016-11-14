@@ -20,10 +20,21 @@ namespace ConfigChanger
         static extern int SetForegroundWindow(IntPtr point);
 
         Form2 form2 = new Form2();
+
         private int otherOptions = 2; // Amount of other options that are saved (for reading from file)
         private double gameSpeed = 1.0f; // Holder for the GUI
         private int numComments = 2; // Amount of comments in the file
-        private string bindingsPath = @"plugins\commands";
+        bool injectorRunning = false;
+
+        private string dirCommands = @"plugins\commands\";
+        private string dirPlugins = @"plugins";
+        private string pluginsConfig = @"plugins.cfg";
+        private string pluginsDat = @"plugins.dat";
+        private string guiConfigLocation = @"cfg\GUIConfig\";
+        private List<string> dirConfigFiles = new List<string>() { @"default.cfg", @"bindings.cfg", @"otherOptions.cfg", @"customCode.cfg", @"plugins.cfg" }; // Each plugin has it's own config file for advanced modularity
+        private List<string> loadedPlugins = new List<string>(); // All the plugins that have been loaded, grabbed from the plugins list and saved. Used for reading and writing to cfg file
+
+        List<string> commands = new List<string>();
 
         private string[] keycodes = new string[]
         {
@@ -94,8 +105,6 @@ namespace ConfigChanger
             "NumPadZero", "Decimal"
         };
 
-        string[] commands;
-
         string[] maps = new string[]
         {
             "cosmic", "doublegoal", "eurostadium", "eurostadium_rainy", "hoops",
@@ -110,6 +119,11 @@ namespace ConfigChanger
         public Form1()
         {
             InitializeComponent();
+            // File Dialog
+            ofd.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory + dirPlugins;
+            initConfigFiles();
+            loadPlugins();
+            // Must be after plugins so it can load the commands
             initCommands();
 
             // Add references to default boxes
@@ -126,13 +140,14 @@ namespace ConfigChanger
             try
             {
                 foreach (ComboBox cmb in commandBoxes)
-                    cmb.Items.AddRange(commands);
+                    cmb.Items.AddRange(commands.ToArray());
             }
-            catch (ArgumentNullException) { MessageBox.Show("No Command files are present in \n'" + bindingsPath + "'", "No Problem."); }
+            catch (ArgumentNullException) { MessageBox.Show("No Command files are present in \n'" + dirCommands + "'", "No Problem."); }
             foreach (ComboBox cmb in keyBoxes)
                 cmb.Items.AddRange(keycodes);
 
             cmbMaps.Items.AddRange(maps);
+
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -170,62 +185,80 @@ namespace ConfigChanger
 
         private void btnSave_Click(object sender, EventArgs e)
         {
+            StreamWriter sw = null;
             try
             {
-                StreamWriter sw = new StreamWriter(Application.StartupPath + "\\cfg\\config.cfg");
-                sw.WriteLine("// Re-initialise all the keys");
+                //Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[0]);
+                // Write the bindings
+                sw = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[0]);
                 // Initialise the keycodes for when changing on the fly
-                for (int i = 0; i < keycodes.Length; i++)
-                    sw.WriteLine("bind " + keycodes[i] + " \"\"");
+                sw.WriteLine("unbindall");
+                sw.Flush();
+                sw.Close();
+            } catch (Exception) { MessageBox.Show("Error with initial unbinding"); }
+
+            try
+            {
+                sw = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[1]);
 
                 // Write the new keys
-                sw.WriteLine("// Bind the new keys");
                 for (int i = 0; i < commandBoxes.Count; i++)
                     sw.WriteLine("bind " + keyBoxes[i].SelectedItem.ToString() + " \"" + commandBoxes[i].SelectedItem.ToString() + "\"");
 
+                sw.Flush();
+                sw.Close();
+            } catch (Exception) { MessageBox.Show("Error saving keybindings"); }
+
+            try
+            {
+                sw = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[2]);
                 // Write the others tab
-                if(chkGameSpeed.Checked)
+                if (chkGameSpeed.Checked)
                     sw.WriteLine("bind " + cmbGameSpeed.SelectedItem.ToString() + " \"gamespeed " + gameSpeed + "\"");
                 else
                     sw.WriteLine("// bind " + cmbGameSpeed.SelectedItem.ToString() + " \"gamespeed " + gameSpeed + "\"");
 
-                if(chkLoadMap.Checked)
+                if (chkLoadMap.Checked)
                     sw.WriteLine("loadmap " + cmbMaps.SelectedItem.ToString());
                 else
                     sw.WriteLine("// loadmap " + cmbMaps.SelectedItem.ToString());
                 sw.Flush();
                 sw.Close();
-                MessageBox.Show("Saved, reload in game console.");
-            } catch (Exception) { MessageBox.Show("Something went wrong setting the cfg. \nEnsure that there are no blank selections."); }
+            } catch (NullReferenceException) { MessageBox.Show("Other options could not be saved as it contains empty dropdown lists"); }
+            catch (IOException) { MessageBox.Show("Something has gone wrong accessing the other options file"); }
+            catch (Exception) { MessageBox.Show("Something has gone wrong writing to the other options file"); }
+
+            savePlugins();
+            saveCustomCode();
         }
 
         // Needed in case the user's current config file is outdated (otherwise they can't reload)
         /** Automatically run on load */
         private void btnLoad_Click(object sender, EventArgs e)
         {
-            string[] linesFromFile;
+            List<string> bindLines = new List<string>();
 
             // Spliting the string
-            string[] separators = {
-                "// Re-initialise all the keys", "//  Bind the new keys",
-                "//", " ", "\"",
-                "bind", "loadmap", "gamespeed", "ball velocity", "(-400, 400)", "(1200, 1700)" };
-            string totalString = "";
-            string totalString2 = "";
+            string[] separators = { " ", "\"", "bind" };
 
             try
             {
-                // Get everything
+                // Get Binding Lines
                 try
                 {
-                    linesFromFile = File.ReadAllLines(Application.StartupPath + @"\cfg\config.cfg");                
-                } catch (Exception) { MessageBox.Show("Something went wrong reading the cfg. Ensure that it is in cfg\\config.cfg", "Oops!"); return; }
-                
+                    bindLines = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[1]).ToList();                
+                } catch (Exception) { MessageBox.Show("Something went wrong reading the cfg. Ensure that it is in '" + guiConfigLocation + dirConfigFiles[0] + "'", "Oops!"); return; }
+
                 // Format the result for the first tab (Bindings)
-                for (int i = keycodes.Length + numComments; i < linesFromFile.Length - otherOptions; i++)
-                    totalString += linesFromFile[i];
-                string[] values = totalString.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-                //Console.WriteLine(totalString);
+                string t = "";
+                foreach (string s in bindLines)
+                {
+                    if(!s.Contains("//"))
+                        t += s;
+                }
+
+                string[] values = t.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
                 for (int i = 0; i < values.Length; i++)
                 {
                     if (commandBoxes.Count < values.Length / 2)
@@ -244,6 +277,368 @@ namespace ConfigChanger
                 x = 0;
                 for (int i = 1; i < values.Length; i += 2)
                 {                    
+                    commandBoxes[x].SelectedIndex = commandBoxes[x].Items.IndexOf(values[i]);
+                    if (commandBoxes[x].SelectedIndex == -1)
+                    {
+                        missingPluginsNames += "\n" + values[i];
+                        pluginMissing = true;
+                    }
+                    x++;
+                }
+                if (pluginMissing)
+                    MessageBox.Show("One or more the plugins that you have bound actions from \nno longer exists in the 'plugins' folder.\nAll Command Bindings from this plugin will be discarded if you save.\n\nCommands missing:" + missingPluginsNames, "Noooooo!");
+
+                // Other Options (Game Speed, Map, perhaps boost amount?)
+                List<string> otherOps = new List<string>();
+                string v = "";
+                try { otherOps = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[2]).ToList(); }
+                catch (Exception) { MessageBox.Show("Something went wrong reading the other options config. Ensure that it is in '" + guiConfigLocation + dirConfigFiles[2] + "'", "Oops!"); return; }
+                
+                foreach (string s in otherOps) v += s; 
+
+                string[] separators2 = new string[] { "loadmap", "gamespeed", "bind", "\"", " ", "//"};
+                string[] values2 = v.Split(separators2, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string s in values2)
+                    Console.WriteLine(s);
+
+                if (otherOps[0].Contains("//"))
+                    chkGameSpeed.Checked = false;
+                else
+                    chkGameSpeed.Checked = true;
+                if (otherOps[1].Contains("//"))
+                    chkLoadMap.Checked = false;
+                else
+                    chkLoadMap.Checked = true;
+
+
+                // Set the game speed Key and Speed
+                try
+                {
+                    cmbGameSpeed.SelectedIndex = cmbGameSpeed.Items.IndexOf(values2[0]);
+                    gameSpeed = double.Parse(values2[1]);
+                }
+                catch (Exception) { MessageBox.Show("Game Speed found is not a double (e.g 1.0)\n Or there was an issue with the line it was bound on", "No Way!"); }
+
+                txtGameSpeed.Text = "" + gameSpeed;
+
+                // Set map to load
+                cmbMaps.SelectedIndex = cmbMaps.Items.IndexOf(values2[2]);
+                
+    
+            } catch (Exception) { MessageBox.Show("Your config file is outdated. \nPlease backup your config and click 'Save' to generate a new one.", "Nice Shot!"); }
+        }
+
+        // Show the commands window
+        private void btnCommands_Click(object sender, EventArgs e)
+        {
+            form2.Show();
+        }
+
+        private void btnRemoveRow_Click(object sender, EventArgs e)
+        {
+            // ensure there is at least one row
+            if (keyBoxes.Count > 1)
+            {
+                // Remove the controls
+                tabPage1.Controls.RemoveAt(tabPage1.Controls.IndexOf(keyBoxes[keyBoxes.Count - 1]));
+                tabPage1.Controls.RemoveAt(tabPage1.Controls.IndexOf(commandBoxes[commandBoxes.Count - 1]));
+                keyBoxes.RemoveAt(keyBoxes.Count - 1);
+                commandBoxes.RemoveAt(commandBoxes.Count - 1);
+                // Resize
+                tabCustomConfig.MaximumSize = new Size(tabCustomConfig.Width, tabCustomConfig.Height - 27);
+                tabCustomConfig.MinimumSize = new Size(tabCustomConfig.Width, tabCustomConfig.Height - 27);
+                this.MaximumSize = new Size(Width, Height - 27);
+                this.MinimumSize = new Size(Width, Height - 27);
+
+                tabCustomConfig.Size = tabCustomConfig.MaximumSize;
+            }
+        }
+
+        private void btnAddRow_Click(object sender, EventArgs e)
+        {
+            addBind();
+        }
+
+        // Used when addrow is clicked and also when reading from cfg
+        private void addBind()
+        {
+            // Params: Box is 27 below the last one. Box is 208, 21 in size.
+            // Command
+            commandBoxes.Add(new ComboBox());
+            commandBoxes[commandBoxes.Count - 1].FlatStyle = FlatStyle.Flat;
+            commandBoxes[commandBoxes.Count - 1].DropDownStyle = ComboBoxStyle.DropDownList;
+            commandBoxes[commandBoxes.Count - 1].Size = new Size(208, 21);
+            commandBoxes[commandBoxes.Count - 1].Location = new Point(commandBoxes[commandBoxes.Count - 2].Location.X, commandBoxes[commandBoxes.Count - 2].Location.Y + 27);
+            commandBoxes[commandBoxes.Count - 1].Items.AddRange(commands.ToArray());
+            tabCustomConfig.GetControl(0).Controls.Add(commandBoxes[commandBoxes.Count - 1]);
+            // Keys
+            keyBoxes.Add(new ComboBox());
+            keyBoxes[keyBoxes.Count - 1].FlatStyle = FlatStyle.Flat;
+            keyBoxes[keyBoxes.Count - 1].DropDownStyle = ComboBoxStyle.DropDownList;
+            keyBoxes[keyBoxes.Count - 1].Size = new Size(208, 21);
+            keyBoxes[keyBoxes.Count - 1].Location = new Point(keyBoxes[keyBoxes.Count - 2].Location.X, keyBoxes[keyBoxes.Count - 2].Location.Y + 27);
+            tabCustomConfig.GetControl(0).Controls.Add(keyBoxes[keyBoxes.Count - 1]);
+            keyBoxes[keyBoxes.Count - 1].Items.AddRange(keycodes);
+            // Set new size
+            tabCustomConfig.MaximumSize = new Size(tabCustomConfig.Width, tabCustomConfig.Height + 27);
+            tabCustomConfig.MinimumSize = new Size(tabCustomConfig.Width, tabCustomConfig.Height + 27);
+            this.MaximumSize = new Size(Width, Height + 27);
+            this.MinimumSize = new Size(Width, Height + 27);
+        }
+
+        // Running the injector from the application
+        private void btnRunInjector_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine(Application.StartupPath);
+            ProcessStartInfo injector = new ProcessStartInfo(Application.StartupPath + "\\BakkesModInjector.exe");
+            injector.Verb = "runas";
+            Process.Start(injector);
+            injectorRunning = true;
+
+        }
+
+        // Loading the config in RocketLeague
+        private void btnApplyConfig_Click(object sender, EventArgs e)
+        {
+            if (!injectorRunning)
+            {
+                MessageBox.Show("Injector must be running to apply the Configuration files");
+                return;
+            }
+            btnSave.PerformClick();
+            try
+            {
+                // Get first process with this name
+                Process p = Process.GetProcessesByName("rocketleague")[0];
+
+                IntPtr pointer = p.MainWindowHandle;
+                SetForegroundWindow(pointer);
+                // Execute each of the config files
+                SendKeys.SendWait("`");
+                foreach (string s in loadedPlugins)
+                    SendKeys.SendWait("exec GUIConfig\\" + s + "{ENTER}");
+                SendKeys.SendWait("`");
+            } catch (IndexOutOfRangeException) { MessageBox.Show("Rocket League must be launched \nto apply the configuration in-game", "Whoops..."); }
+        }
+
+        private void initCommands()
+        {
+            List<string> newCommands = new List<string>();
+            string[] fileCommands = null; // Required in case something is wrong with the commands in the file
+            string[] files = null;
+            // Gets command files, creates directory if it doesn't exist
+            try { files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + dirCommands); }
+            catch (DirectoryNotFoundException) {
+                MessageBox.Show("'" + dirCommands + "' did not exist, created!");
+                Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + dirCommands);
+                return;
+            }
+
+            // Load commands
+            foreach (string s in files)
+            {
+                Console.WriteLine(s);
+                if (s.EndsWith(".bnd"))
+                {
+                    // Make sure the plugin is loaded
+                    if (lstLoadedPlugins.Items.Contains(Path.GetFileNameWithoutExtension(s)))
+                    {
+                        // Get commands
+                        try
+                        {
+                            fileCommands = File.ReadAllLines(s);
+
+                            foreach (string t in fileCommands)
+                            {
+                                if (!t.Contains(" "))
+                                    newCommands.Add(t);
+                                else
+                                    MessageBox.Show("Could not add command '" + t + "' (Contains a space)\n\nCommands file: " + s + "\n\nAll other commands from the file have been added.", "Savage!");
+                            }
+                        }
+                        catch (Exception) { MessageBox.Show("There is something wrong with Commands file \n" + s, "What a save!"); }
+                    }
+                }
+            }
+
+            commands = newCommands;
+        }
+
+        private void initConfigFiles()
+        {
+            // Create Config Location if it doesn't exist
+            Directory.CreateDirectory(guiConfigLocation);
+            // Create config files if they don't exist
+            foreach (string s in dirConfigFiles)
+            { 
+                if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + s))
+                {
+                    File.Create(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + s);
+                }
+            }
+            if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + pluginsConfig))
+                File.Create(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + pluginsConfig);
+        }
+
+        // Saves all the plugins to a data file for loading
+        private void savePlugins()
+        {
+            try
+            {
+                loadedPlugins.Clear();
+                foreach (string t in lstLoadedPlugins.Items)
+                    loadedPlugins.Add(t);
+
+                File.WriteAllLines(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + pluginsDat, loadedPlugins);
+
+            } catch (Exception) { MessageBox.Show("Plugins configuration file does not exist"); }
+
+            savePluginConfig();
+        }
+
+        // Save the plugin configuration file
+        private void savePluginConfig()
+        {
+            List<string> loadPluginsString = new List<string>();
+            foreach (string s in loadedPlugins)
+                loadPluginsString.Add("plugin load " + s);
+            try
+            {
+                File.WriteAllLines(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + pluginsConfig, loadPluginsString);
+            }
+            catch (Exception) { MessageBox.Show("Plugins configuration file does not exist"); }
+        }
+
+        private void loadPlugins()
+        {
+            // Add all the plugins from the file
+            try
+            {
+                lstLoadedPlugins.Items.AddRange(File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + pluginsDat));
+            }
+            catch (Exception) { MessageBox.Show("Plugins configuration file does not exist or is empty"); }
+        }
+
+        private void btnUnloadPlugin_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string unloadedPlugin = lstLoadedPlugins.GetItemText(lstLoadedPlugins.SelectedItem);
+                lstLoadedPlugins.Items.RemoveAt(lstLoadedPlugins.SelectedIndex);
+                string[] commandsToDelete = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + dirCommands + unloadedPlugin + ".bnd");
+                foreach (ComboBox c in commandBoxes)
+                {
+                    foreach (string s in commandsToDelete)
+                    {
+                        if (c.Items.Contains(s))
+                            c.Items.Remove(s);
+                    }
+                }
+            } catch (ArgumentOutOfRangeException) { /* User did not select a plugin, do nothing */ }
+        }
+
+        private void btnLoadPlugin_Click(object sender, EventArgs e)
+        {
+            ofd.ShowDialog();
+            string fileName = Path.GetFileNameWithoutExtension(ofd.FileName);
+            if (fileName == "")
+                return;
+            if (lstLoadedPlugins.Items.Contains(fileName))
+            {
+                MessageBox.Show("Plugin is already loaded");
+                return;
+            }
+            lstLoadedPlugins.Items.Add(fileName);
+            if (!dirConfigFiles.Contains(@fileName + ".cfg"))
+            {
+                dirConfigFiles.Add(@fileName + ".cfg");
+                // Create the config file for this plugin
+                createPluginConfig();
+            }
+
+            string[] _commands = null;
+            try { _commands = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + dirCommands + fileName + ".bnd"); }
+            catch (FileNotFoundException) { MessageBox.Show("No Command file present for selected plugin"); }
+            catch (Exception) { MessageBox.Show("Something went wrong loading the selected plugin's Command file."); }
+
+            foreach (string s in _commands)
+                if (!commands.Contains(s))
+                {
+                    commands.Add(s);
+                    foreach (ComboBox c in commandBoxes)
+                        c.Items.Add(s);
+                }
+
+            ofd.Dispose();
+        }
+
+        private void createPluginConfig()
+        {
+            if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + Path.GetFileNameWithoutExtension(ofd.FileName) + ".cfg"))
+                File.Create(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + Path.GetFileNameWithoutExtension(ofd.FileName) + ".cfg");
+        }
+
+        private void btnEditConfig_Click(object sender, EventArgs e)
+        {
+            Process.Start("notepad.exe", AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + lstLoadedPlugins.Text + ".cfg");
+        }
+
+        /* TODO */
+        private void saveCustomCode()
+        {
+            string[] tmpCode = txtCustomConfig.Text.Split('\n');
+            StreamWriter sw = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[3]);
+            foreach (string s in tmpCode)
+                sw.WriteLine(s);
+            sw.Flush();
+            sw.Close();
+        }
+
+        // The old way of loading
+        void old()
+        {
+            string[] linesFromFile;
+
+            // Spliting the string
+            string[] separators = {
+                "// Re-initialise all the keys", "//  Bind the new keys",
+                "//", " ", "\"",
+                "bind", "loadmap", "gamespeed", "ball velocity", "(-400, 400)", "(1200, 1700)" };
+            string totalString = "";
+            string totalString2 = "";
+
+            try
+            {
+                // Get everything
+                try
+                {
+                    linesFromFile = File.ReadAllLines(Application.StartupPath + @"\cfg\config.cfg");
+                }
+                catch (Exception) { MessageBox.Show("Something went wrong reading the cfg. Ensure that it is in cfg\\config.cfg", "Oops!"); return; }
+
+                // Format the result for the first tab (Bindings)
+                for (int i = keycodes.Length + numComments; i < linesFromFile.Length - otherOptions; i++)
+                    totalString += linesFromFile[i];
+                string[] values = totalString.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                //Console.WriteLine(totalString);
+                for (int i = 0; i < values.Length; i++)
+                {
+                    if (commandBoxes.Count < values.Length / 2)
+                        addBind();
+                }
+
+                int x = 0;
+                bool pluginMissing = false;
+                string missingPluginsNames = "";
+                for (int i = 0; i < values.Length; i += 2)
+                {
+                    keyBoxes[x].SelectedIndex = keyBoxes[x].Items.IndexOf(values[i]);
+                    x++;
+                }
+
+                x = 0;
+                for (int i = 1; i < values.Length; i += 2)
+                {
                     commandBoxes[x].SelectedIndex = commandBoxes[x].Items.IndexOf(values[i]);
                     if (commandBoxes[x].SelectedIndex == -1)
                     {
@@ -276,122 +671,12 @@ namespace ConfigChanger
                 txtGameSpeed.Text = "" + gameSpeed;
                 // Set map to load
                 cmbMaps.SelectedIndex = cmbMaps.Items.IndexOf(values2[2]);
-                
-    
-            } catch (Exception) { MessageBox.Show("Your config file is outdated. \nPlease backup your config and click 'Save' to generate a new one.", "Nice Shot!"); }
-        }
 
-        // Show the commands window
-        private void btnCommands_Click(object sender, EventArgs e)
-        {
-            form2.Show();
-        }
 
-        private void btnRemoveRow_Click(object sender, EventArgs e)
-        {
-            // ensure there is at least one row
-            if (keyBoxes.Count > 1)
-            {
-                // Remove the controls
-                tabPage1.Controls.RemoveAt(tabPage1.Controls.IndexOf(keyBoxes[keyBoxes.Count - 1]));
-                tabPage1.Controls.RemoveAt(tabPage1.Controls.IndexOf(commandBoxes[commandBoxes.Count - 1]));
-                keyBoxes.RemoveAt(keyBoxes.Count - 1);
-                commandBoxes.RemoveAt(commandBoxes.Count - 1);
-                // Resize
-                tabControl1.MaximumSize = new Size(tabControl1.Width, tabControl1.Height - 27);
-                tabControl1.MinimumSize = new Size(tabControl1.Width, tabControl1.Height - 27);
-                this.MaximumSize = new Size(Width, Height - 27);
-                this.MinimumSize = new Size(Width, Height - 27);
-
-                tabControl1.Size = tabControl1.MaximumSize;
             }
-        }
+            catch (Exception) { MessageBox.Show("Your config file is outdated. \nPlease backup your config and click 'Save' to generate a new one.", "Nice Shot!"); }
 
-        private void btnAddRow_Click(object sender, EventArgs e)
-        {
-            addBind();
-        }
-
-        // Used when addrow is clicked and also when reading from cfg
-        private void addBind()
-        {
-            // Params: Box is 27 below the last one. Box is 208, 21 in size.
-            // Command
-            commandBoxes.Add(new ComboBox());
-            commandBoxes[commandBoxes.Count - 1].FlatStyle = FlatStyle.Flat;
-            commandBoxes[commandBoxes.Count - 1].DropDownStyle = ComboBoxStyle.DropDownList;
-            commandBoxes[commandBoxes.Count - 1].Size = new Size(208, 21);
-            commandBoxes[commandBoxes.Count - 1].Location = new Point(commandBoxes[commandBoxes.Count - 2].Location.X, commandBoxes[commandBoxes.Count - 2].Location.Y + 27);
-            commandBoxes[commandBoxes.Count - 1].Items.AddRange(commands);
-            tabControl1.GetControl(0).Controls.Add(commandBoxes[commandBoxes.Count - 1]);
-            // Keys
-            keyBoxes.Add(new ComboBox());
-            keyBoxes[keyBoxes.Count - 1].FlatStyle = FlatStyle.Flat;
-            keyBoxes[keyBoxes.Count - 1].DropDownStyle = ComboBoxStyle.DropDownList;
-            keyBoxes[keyBoxes.Count - 1].Size = new Size(208, 21);
-            keyBoxes[keyBoxes.Count - 1].Location = new Point(keyBoxes[keyBoxes.Count - 2].Location.X, keyBoxes[keyBoxes.Count - 2].Location.Y + 27);
-            tabControl1.GetControl(0).Controls.Add(keyBoxes[keyBoxes.Count - 1]);
-            keyBoxes[keyBoxes.Count - 1].Items.AddRange(keycodes);
-            // Set new size
-            tabControl1.MaximumSize = new Size(tabControl1.Width, tabControl1.Height + 27);
-            tabControl1.MinimumSize = new Size(tabControl1.Width, tabControl1.Height + 27);
-            this.MaximumSize = new Size(Width, Height + 27);
-            this.MinimumSize = new Size(Width, Height + 27);
-        }
-
-        // Running the injector from the application
-        private void btnRunInjector_Click(object sender, EventArgs e)
-        {
-            Console.WriteLine(Application.StartupPath);
-            ProcessStartInfo injector = new ProcessStartInfo(Application.StartupPath + "\\BakkesModInjector.exe");
-            injector.Verb = "runas";
-            Process.Start(injector);
-        }
-
-        // Loading the config in RocketLeague
-        private void btnApplyConfig_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // Get first process with this name
-                Process p = Process.GetProcessesByName("rocketleague")[0];
-
-                IntPtr pointer = p.Handle;
-                SetForegroundWindow(pointer);
-                // Send the keys to rocket league
-                SendKeys.SendWait("`exec config{ENTER}`");
-            } catch (IndexOutOfRangeException) { MessageBox.Show("Rocket League must be launched \nto apply the configuration in-game", "Whoops..."); }
-        }
-
-        private void initCommands()
-        {
-            List<string> newCommands = new List<string>();
-            string[] fileCommands = null; // Required in case something is wrong with the commands in the file
-            //Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory + @"plugins\commands\");
-            string[] files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + bindingsPath);
-            foreach (string s in files)
-            {
-                Console.WriteLine(s);
-                if (s.EndsWith(".bnd"))
-                {
-                    // Get commands
-                    try
-                    {
-                        fileCommands = File.ReadAllLines(s);
-
-                        foreach (string t in fileCommands)
-                        {
-                            if (!t.Contains(" "))
-                                newCommands.Add(t);
-                            else
-                                MessageBox.Show("Could not add command '" + t + "' (Contains a space)\n\nCommands file: " + s + "\n\nAll other commands from the file have been added.", "Savage!");
-                        }
-                    }
-                    catch (Exception) { MessageBox.Show("There is something wrong with Commands file \n" + s, "What a save!"); }
-                }
-            }
-
-            commands = newCommands.ToArray();
         }
     }
 }
+

@@ -50,19 +50,35 @@
             this.label9 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabCustomConfig = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.btnAddRow = new System.Windows.Forms.Button();
             this.btnRemoveRow = new System.Windows.Forms.Button();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.chkLoadMap = new System.Windows.Forms.CheckBox();
             this.chkGameSpeed = new System.Windows.Forms.CheckBox();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.btnLoadPlugin = new System.Windows.Forms.Button();
+            this.btnUnloadPlugin = new System.Windows.Forms.Button();
+            this.grpLoadedPlugins = new System.Windows.Forms.GroupBox();
+            this.lstLoadedPlugins = new System.Windows.Forms.ListBox();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.grpCustomConfig = new System.Windows.Forms.GroupBox();
+            this.txtCustomConfig = new System.Windows.Forms.TextBox();
             this.btnRunInjector = new System.Windows.Forms.Button();
             this.btnApplyConfig = new System.Windows.Forms.Button();
+            this.ofd = new System.Windows.Forms.OpenFileDialog();
+            this.btnEditConfig = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
-            this.tabControl1.SuspendLayout();
+            this.tabCustomConfig.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            this.tabPage3.SuspendLayout();
+            this.grpLoadedPlugins.SuspendLayout();
+            this.tabPage4.SuspendLayout();
+            this.grpCustomConfig.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnSave
@@ -405,15 +421,17 @@
             this.label3.TabIndex = 31;
             this.label3.Text = "Key/Button";
             // 
-            // tabControl1
+            // tabCustomConfig
             // 
-            this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Location = new System.Drawing.Point(12, 12);
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(560, 288);
-            this.tabControl1.TabIndex = 32;
+            this.tabCustomConfig.Controls.Add(this.tabPage1);
+            this.tabCustomConfig.Controls.Add(this.tabPage2);
+            this.tabCustomConfig.Controls.Add(this.tabPage3);
+            this.tabCustomConfig.Controls.Add(this.tabPage4);
+            this.tabCustomConfig.Location = new System.Drawing.Point(12, 12);
+            this.tabCustomConfig.Name = "tabCustomConfig";
+            this.tabCustomConfig.SelectedIndex = 0;
+            this.tabCustomConfig.Size = new System.Drawing.Size(560, 288);
+            this.tabCustomConfig.TabIndex = 32;
             // 
             // tabPage1
             // 
@@ -501,6 +519,109 @@
             this.chkGameSpeed.TabIndex = 30;
             this.chkGameSpeed.UseVisualStyleBackColor = true;
             // 
+            // tabPage3
+            // 
+            this.tabPage3.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPage3.Controls.Add(this.btnEditConfig);
+            this.tabPage3.Controls.Add(this.btnLoadPlugin);
+            this.tabPage3.Controls.Add(this.btnUnloadPlugin);
+            this.tabPage3.Controls.Add(this.grpLoadedPlugins);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(552, 262);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Plugins";
+            // 
+            // btnLoadPlugin
+            // 
+            this.btnLoadPlugin.Location = new System.Drawing.Point(261, 22);
+            this.btnLoadPlugin.Name = "btnLoadPlugin";
+            this.btnLoadPlugin.Size = new System.Drawing.Size(105, 23);
+            this.btnLoadPlugin.TabIndex = 3;
+            this.btnLoadPlugin.Text = "Load New Plugin";
+            this.btnLoadPlugin.UseVisualStyleBackColor = true;
+            this.btnLoadPlugin.Click += new System.EventHandler(this.btnLoadPlugin_Click);
+            // 
+            // btnUnloadPlugin
+            // 
+            this.btnUnloadPlugin.Location = new System.Drawing.Point(261, 51);
+            this.btnUnloadPlugin.Name = "btnUnloadPlugin";
+            this.btnUnloadPlugin.Size = new System.Drawing.Size(105, 23);
+            this.btnUnloadPlugin.TabIndex = 2;
+            this.btnUnloadPlugin.Text = "Unload Selected";
+            this.btnUnloadPlugin.UseVisualStyleBackColor = true;
+            this.btnUnloadPlugin.Click += new System.EventHandler(this.btnUnloadPlugin_Click);
+            // 
+            // grpLoadedPlugins
+            // 
+            this.grpLoadedPlugins.Controls.Add(this.lstLoadedPlugins);
+            this.grpLoadedPlugins.Location = new System.Drawing.Point(3, 3);
+            this.grpLoadedPlugins.Name = "grpLoadedPlugins";
+            this.grpLoadedPlugins.Size = new System.Drawing.Size(252, 213);
+            this.grpLoadedPlugins.TabIndex = 1;
+            this.grpLoadedPlugins.TabStop = false;
+            this.grpLoadedPlugins.Text = "Loaded Plugins";
+            // 
+            // lstLoadedPlugins
+            // 
+            this.lstLoadedPlugins.FormattingEnabled = true;
+            this.lstLoadedPlugins.Location = new System.Drawing.Point(6, 19);
+            this.lstLoadedPlugins.Name = "lstLoadedPlugins";
+            this.lstLoadedPlugins.Size = new System.Drawing.Size(236, 186);
+            this.lstLoadedPlugins.TabIndex = 0;
+            // 
+            // tabPage4
+            // 
+            this.tabPage4.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPage4.Controls.Add(this.label5);
+            this.tabPage4.Controls.Add(this.label4);
+            this.tabPage4.Controls.Add(this.grpCustomConfig);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Size = new System.Drawing.Size(552, 262);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "Custom Config";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.Location = new System.Drawing.Point(3, 20);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(250, 13);
+            this.label5.TabIndex = 2;
+            this.label5.Text = "Be careful, as this code is run unchecked for errors!";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.Location = new System.Drawing.Point(3, 3);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(479, 13);
+            this.label4.TabIndex = 1;
+            this.label4.Text = "Any code entered into here will be saved to a configuration file and run when you" +
+    " click \'Apply Config\'\r\n";
+            // 
+            // grpCustomConfig
+            // 
+            this.grpCustomConfig.Controls.Add(this.txtCustomConfig);
+            this.grpCustomConfig.Location = new System.Drawing.Point(3, 36);
+            this.grpCustomConfig.Name = "grpCustomConfig";
+            this.grpCustomConfig.Size = new System.Drawing.Size(546, 223);
+            this.grpCustomConfig.TabIndex = 0;
+            this.grpCustomConfig.TabStop = false;
+            this.grpCustomConfig.Text = "Configuration Code";
+            // 
+            // txtCustomConfig
+            // 
+            this.txtCustomConfig.Location = new System.Drawing.Point(6, 19);
+            this.txtCustomConfig.Multiline = true;
+            this.txtCustomConfig.Name = "txtCustomConfig";
+            this.txtCustomConfig.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtCustomConfig.Size = new System.Drawing.Size(534, 198);
+            this.txtCustomConfig.TabIndex = 0;
+            // 
             // btnRunInjector
             // 
             this.btnRunInjector.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
@@ -527,6 +648,22 @@
             this.btnApplyConfig.UseVisualStyleBackColor = false;
             this.btnApplyConfig.Click += new System.EventHandler(this.btnApplyConfig_Click);
             // 
+            // ofd
+            // 
+            this.ofd.AddExtension = false;
+            this.ofd.Filter = "Plugins|*.dll";
+            this.ofd.Multiselect = true;
+            // 
+            // btnEditConfig
+            // 
+            this.btnEditConfig.Location = new System.Drawing.Point(3, 222);
+            this.btnEditConfig.Name = "btnEditConfig";
+            this.btnEditConfig.Size = new System.Drawing.Size(252, 37);
+            this.btnEditConfig.TabIndex = 4;
+            this.btnEditConfig.Text = "Edit config for selected plugin";
+            this.btnEditConfig.UseVisualStyleBackColor = true;
+            this.btnEditConfig.Click += new System.EventHandler(this.btnEditConfig_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -534,7 +671,7 @@
             this.ClientSize = new System.Drawing.Size(584, 379);
             this.Controls.Add(this.btnApplyConfig);
             this.Controls.Add(this.btnRunInjector);
-            this.Controls.Add(this.tabControl1);
+            this.Controls.Add(this.tabCustomConfig);
             this.Controls.Add(this.btnCommands);
             this.Controls.Add(this.btnLoad);
             this.Controls.Add(this.btnSave);
@@ -546,11 +683,17 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
-            this.tabControl1.ResumeLayout(false);
+            this.tabCustomConfig.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
+            this.tabPage3.ResumeLayout(false);
+            this.grpLoadedPlugins.ResumeLayout(false);
+            this.tabPage4.ResumeLayout(false);
+            this.tabPage4.PerformLayout();
+            this.grpCustomConfig.ResumeLayout(false);
+            this.grpCustomConfig.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -579,7 +722,7 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabControl tabCustomConfig;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.Button btnRemoveRow;
@@ -588,6 +731,18 @@
         private System.Windows.Forms.Button btnAddRow;
         private System.Windows.Forms.Button btnRunInjector;
         private System.Windows.Forms.Button btnApplyConfig;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.Button btnLoadPlugin;
+        private System.Windows.Forms.Button btnUnloadPlugin;
+        private System.Windows.Forms.GroupBox grpLoadedPlugins;
+        private System.Windows.Forms.ListBox lstLoadedPlugins;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.GroupBox grpCustomConfig;
+        private System.Windows.Forms.TextBox txtCustomConfig;
+        private System.Windows.Forms.OpenFileDialog ofd;
+        private System.Windows.Forms.Button btnEditConfig;
     }
 }
 

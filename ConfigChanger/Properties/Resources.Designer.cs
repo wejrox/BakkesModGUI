@@ -59,14 +59,5 @@ namespace ConfigChanger.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to false.
-        /// </summary>
-        internal static string loadOnStart {
-            get {
-                return ResourceManager.GetString("loadOnStart", resourceCulture);
-            }
-        }
     }
 }
