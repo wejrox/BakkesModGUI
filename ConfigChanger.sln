@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigChanger", "ConfigChanger\ConfigChanger.csproj", "{4FB78A67-014F-4838-A003-A49ECBCD51BC}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "BakkesModSetup", "BakkesModSetup\BakkesModSetup.vdproj", "{76E77906-D8EB-4901-B4B9-CEA9E4D0701D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,8 @@ Global
 		{4FB78A67-014F-4838-A003-A49ECBCD51BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FB78A67-014F-4838-A003-A49ECBCD51BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FB78A67-014F-4838-A003-A49ECBCD51BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76E77906-D8EB-4901-B4B9-CEA9E4D0701D}.Debug|Any CPU.ActiveCfg = Debug
+		{76E77906-D8EB-4901-B4B9-CEA9E4D0701D}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
