@@ -179,14 +179,12 @@ namespace ConfigChanger
             StreamWriter sw = null;
             try
             {
-                //Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[0]);
                 // Write the bindings
                 sw = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[0]);
                 // Initialise the keycodes for when changing on the fly
                 sw.WriteLine("unbindall");
                 sw.Flush();
-                sw.Close();
-            } catch (Exception) { MessageBox.Show("Error with initial unbinding"); return; }
+            } catch (Exception) { MessageBox.Show("Error with initial unbinding, file: '" + guiConfigLocation + dirConfigFiles[0] + "'"); return; }
             finally { if (sw != null && sw.BaseStream != null) sw.Close(); }
 
             try
@@ -198,7 +196,6 @@ namespace ConfigChanger
                     sw.WriteLine("bind " + keyBoxes[i].SelectedItem.ToString() + " \"" + commandBoxes[i].SelectedItem.ToString() + "\"");
 
                 sw.Flush();
-                sw.Close();
             } catch (Exception) { MessageBox.Show("Error saving keybindings"); return; }
             finally { if (sw != null && sw.BaseStream != null) sw.Close(); }
 
@@ -415,8 +412,18 @@ namespace ConfigChanger
                 SetForegroundWindow(pointer);
                 // Execute each of the config files
                 SendKeys.SendWait("`");
-                foreach (string s in loadedPlugins)
-                    SendKeys.SendWait("exec GUIConfig\\" + s + "{ENTER}");
+                foreach (string s in loadedPlugins) // Load the plugins advanced file
+                {
+                    string send = @"exec GUIConfig\" + s + @"{ENTER}";
+                    Console.WriteLine(send);
+                    SendKeys.SendWait(send);
+                }
+                foreach (string s in dirConfigFiles) // Load the default config files
+                {
+                    string send = @"exec GUIConfig\" + s + @"{ENTER}";
+                    Console.WriteLine(send);
+                    SendKeys.SendWait(send);
+                }
                 SendKeys.SendWait("`");
             } catch (IndexOutOfRangeException) { MessageBox.Show("Rocket League must be launched \nto apply the configuration in-game", "Whoops..."); }
         }

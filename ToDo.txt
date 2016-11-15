@@ -1,0 +1,4 @@
+change plugins so available plugins are on right list (inactive plugins), press button to move to left list (active plugins)
+write to file both lists on save.
+
+possible 
