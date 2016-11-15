@@ -58,6 +58,7 @@
             this.chkLoadMap = new System.Windows.Forms.CheckBox();
             this.chkGameSpeed = new System.Windows.Forms.CheckBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.btnEditConfig = new System.Windows.Forms.Button();
             this.btnLoadPlugin = new System.Windows.Forms.Button();
             this.btnUnloadPlugin = new System.Windows.Forms.Button();
             this.grpLoadedPlugins = new System.Windows.Forms.GroupBox();
@@ -70,7 +71,6 @@
             this.btnRunInjector = new System.Windows.Forms.Button();
             this.btnApplyConfig = new System.Windows.Forms.Button();
             this.ofd = new System.Windows.Forms.OpenFileDialog();
-            this.btnEditConfig = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.tabCustomConfig.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -315,12 +315,11 @@
             // 
             this.label8.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(19, 5);
+            this.label8.Location = new System.Drawing.Point(5, 7);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(170, 39);
+            this.label8.Size = new System.Drawing.Size(199, 26);
             this.label8.TabIndex = 22;
-            this.label8.Text = "To apply settings in training mode, \r\nClick \"Save Config\", then\r\nClick \"Apply Con" +
-    "fig\"";
+            this.label8.Text = "To apply these settings in training mode, \r\nClick \"Apply Config\"";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // panel1
@@ -331,7 +330,7 @@
             this.panel1.Controls.Add(this.label8);
             this.panel1.Location = new System.Drawing.Point(171, 203);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(213, 53);
+            this.panel1.Size = new System.Drawing.Size(213, 43);
             this.panel1.TabIndex = 23;
             // 
             // cmbCommand3
@@ -532,6 +531,16 @@
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Plugins";
             // 
+            // btnEditConfig
+            // 
+            this.btnEditConfig.Location = new System.Drawing.Point(3, 222);
+            this.btnEditConfig.Name = "btnEditConfig";
+            this.btnEditConfig.Size = new System.Drawing.Size(252, 37);
+            this.btnEditConfig.TabIndex = 4;
+            this.btnEditConfig.Text = "Edit config for selected plugin";
+            this.btnEditConfig.UseVisualStyleBackColor = true;
+            this.btnEditConfig.Click += new System.EventHandler(this.btnEditConfig_Click);
+            // 
             // btnLoadPlugin
             // 
             this.btnLoadPlugin.Location = new System.Drawing.Point(261, 22);
@@ -653,16 +662,6 @@
             this.ofd.AddExtension = false;
             this.ofd.Filter = "Plugins|*.dll";
             this.ofd.Multiselect = true;
-            // 
-            // btnEditConfig
-            // 
-            this.btnEditConfig.Location = new System.Drawing.Point(3, 222);
-            this.btnEditConfig.Name = "btnEditConfig";
-            this.btnEditConfig.Size = new System.Drawing.Size(252, 37);
-            this.btnEditConfig.TabIndex = 4;
-            this.btnEditConfig.Text = "Edit config for selected plugin";
-            this.btnEditConfig.UseVisualStyleBackColor = true;
-            this.btnEditConfig.Click += new System.EventHandler(this.btnEditConfig_Click);
             // 
             // Form1
             // 

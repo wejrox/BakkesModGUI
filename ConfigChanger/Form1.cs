@@ -33,7 +33,7 @@ namespace ConfigChanger
         private string guiConfigLocation = @"cfg\GUIConfig\";
         private List<string> dirConfigFiles = new List<string>() { @"default.cfg", @"bindings.cfg", @"otherOptions.cfg", @"customCode.cfg", @"plugins.cfg" }; // Each plugin has it's own config file for advanced modularity
         private List<string> loadedPlugins = new List<string>(); // All the plugins that have been loaded, grabbed from the plugins list and saved. Used for reading and writing to cfg file
-
+        private List<string> unloadedPlugins = new List<string>(); // All the plugins that will be unloaded on the next configuration run
         List<string> commands = new List<string>();
 
         private string[] keycodes = new string[]
@@ -152,15 +152,6 @@ namespace ConfigChanger
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            for (int i = 0; i < commandBoxes.Count; i++)
-            {
-                commandBoxes[i].SelectedIndex = i;
-                keyBoxes[i].SelectedIndex = i;
-            }
-
-            cmbGameSpeed.SelectedIndex = 0;
-            cmbMaps.SelectedIndex = 0;
-
             btnLoad.PerformClick();
         }
 
@@ -195,7 +186,8 @@ namespace ConfigChanger
                 sw.WriteLine("unbindall");
                 sw.Flush();
                 sw.Close();
-            } catch (Exception) { MessageBox.Show("Error with initial unbinding"); }
+            } catch (Exception) { MessageBox.Show("Error with initial unbinding"); return; }
+            finally { if (sw != null && sw.BaseStream != null) sw.Close(); }
 
             try
             {
@@ -207,7 +199,8 @@ namespace ConfigChanger
 
                 sw.Flush();
                 sw.Close();
-            } catch (Exception) { MessageBox.Show("Error saving keybindings"); }
+            } catch (Exception) { MessageBox.Show("Error saving keybindings"); return; }
+            finally { if (sw != null && sw.BaseStream != null) sw.Close(); }
 
             try
             {
@@ -223,10 +216,10 @@ namespace ConfigChanger
                 else
                     sw.WriteLine("// loadmap " + cmbMaps.SelectedItem.ToString());
                 sw.Flush();
-                sw.Close();
-            } catch (NullReferenceException) { MessageBox.Show("Other options could not be saved as it contains empty dropdown lists"); }
-            catch (IOException) { MessageBox.Show("Something has gone wrong accessing the other options file"); }
-            catch (Exception) { MessageBox.Show("Something has gone wrong writing to the other options file"); }
+            } catch (NullReferenceException) { MessageBox.Show("Other options could not be saved as it contains empty dropdown lists"); return; }
+            catch (IOException) { MessageBox.Show("Something has gone wrong accessing the other options file"); return; }
+            catch (Exception) { MessageBox.Show("Something has gone wrong writing to the other options file"); return; }
+            finally { if (sw != null && sw.BaseStream != null) sw.Close(); }
 
             savePlugins();
             saveCustomCode();
@@ -238,16 +231,17 @@ namespace ConfigChanger
         {
             List<string> bindLines = new List<string>();
 
-            // Spliting the string
+            // Splitting the string
             string[] separators = { " ", "\"", "bind" };
-
             try
             {
                 // Get Binding Lines
                 try
                 {
-                    bindLines = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[1]).ToList();                
+                    bindLines = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[1]).ToList();
                 } catch (Exception) { MessageBox.Show("Something went wrong reading the cfg. Ensure that it is in '" + guiConfigLocation + dirConfigFiles[0] + "'", "Oops!"); return; }
+
+
 
                 // Format the result for the first tab (Bindings)
                 string t = "";
@@ -259,12 +253,15 @@ namespace ConfigChanger
 
                 string[] values = t.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
+                // Add rows
                 for (int i = 0; i < values.Length; i++)
                 {
                     if (commandBoxes.Count < values.Length / 2)
                         addBind();
+                    //Console.WriteLine(values[i]);
                 }
 
+                // Add plugin 
                 int x = 0;
                 bool pluginMissing = false;
                 string missingPluginsNames = "";
@@ -390,10 +387,13 @@ namespace ConfigChanger
         private void btnRunInjector_Click(object sender, EventArgs e)
         {
             Console.WriteLine(Application.StartupPath);
-            ProcessStartInfo injector = new ProcessStartInfo(Application.StartupPath + "\\BakkesModInjector.exe");
-            injector.Verb = "runas";
-            Process.Start(injector);
-            injectorRunning = true;
+            try
+            {
+                ProcessStartInfo injector = new ProcessStartInfo(Application.StartupPath + "\\BakkesModInjector.exe");
+                injector.Verb = "runas";
+                Process.Start(injector);
+                injectorRunning = true;
+            } catch (Win32Exception) { MessageBox.Show("The injector must be present in the root folder", "Injector not found"); }
 
         }
 
@@ -499,9 +499,16 @@ namespace ConfigChanger
         // Save the plugin configuration file
         private void savePluginConfig()
         {
+            // Loading
             List<string> loadPluginsString = new List<string>();
-            foreach (string s in loadedPlugins)
+            foreach (string s in lstLoadedPlugins.Items)
                 loadPluginsString.Add("plugin load " + s);
+
+            // Unloading
+            foreach (string s in unloadedPlugins)
+                loadPluginsString.Add("plugin unload " + s);
+
+            // Apply config
             try
             {
                 File.WriteAllLines(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + pluginsConfig, loadPluginsString);
@@ -516,7 +523,7 @@ namespace ConfigChanger
             {
                 lstLoadedPlugins.Items.AddRange(File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + pluginsDat));
             }
-            catch (Exception) { MessageBox.Show("Plugins configuration file does not exist or is empty"); }
+            catch (Exception) { MessageBox.Show("Plugins configuration file does not exist or is empty", "Nooooo!"); }
         }
 
         private void btnUnloadPlugin_Click(object sender, EventArgs e)
@@ -525,15 +532,23 @@ namespace ConfigChanger
             {
                 string unloadedPlugin = lstLoadedPlugins.GetItemText(lstLoadedPlugins.SelectedItem);
                 lstLoadedPlugins.Items.RemoveAt(lstLoadedPlugins.SelectedIndex);
-                string[] commandsToDelete = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + dirCommands + unloadedPlugin + ".bnd");
-                foreach (ComboBox c in commandBoxes)
+                try
                 {
-                    foreach (string s in commandsToDelete)
+                    string[] commandsToDelete = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + dirCommands + unloadedPlugin + ".bnd");
+                    foreach (ComboBox c in commandBoxes)
                     {
-                        if (c.Items.Contains(s))
-                            c.Items.Remove(s);
+                        foreach (string s in commandsToDelete)
+                        {
+                            if (c.Items.Contains(s))
+                                c.Items.Remove(s);
+                            if (commands.Contains(s))
+                                commands.Remove(s);
+                        }
                     }
-                }
+                } catch (FileNotFoundException) { /* Thrown if there is no bind file. ignore. */ }
+                // Change the unloading array
+                if (!unloadedPlugins.Contains(unloadedPlugin))
+                    unloadedPlugins.Add(unloadedPlugin);
             } catch (ArgumentOutOfRangeException) { /* User did not select a plugin, do nothing */ }
         }
 
@@ -545,7 +560,7 @@ namespace ConfigChanger
                 return;
             if (lstLoadedPlugins.Items.Contains(fileName))
             {
-                MessageBox.Show("Plugin is already loaded");
+                MessageBox.Show("Plugin is already loaded", "Whoops!");
                 return;
             }
             lstLoadedPlugins.Items.Add(fileName);
@@ -557,17 +572,28 @@ namespace ConfigChanger
             }
 
             string[] _commands = null;
-            try { _commands = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + dirCommands + fileName + ".bnd"); }
-            catch (FileNotFoundException) { MessageBox.Show("No Command file present for selected plugin"); }
-            catch (Exception) { MessageBox.Show("Something went wrong loading the selected plugin's Command file."); }
+            try {
+                _commands = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + dirCommands + fileName + ".bnd");
 
-            foreach (string s in _commands)
-                if (!commands.Contains(s))
+                // Add commands if they dont exist
+                foreach (string s in _commands)
                 {
-                    commands.Add(s);
-                    foreach (ComboBox c in commandBoxes)
-                        c.Items.Add(s);
+                    if (!commands.Contains(s))
+                    {
+                        Console.WriteLine("not contains");
+                        commands.Add(s);
+                        foreach (ComboBox c in commandBoxes)
+                            if (!c.Items.Contains(s))
+                                c.Items.Add(s);
+                    }
                 }
+            }
+            catch (FileNotFoundException) { MessageBox.Show("No Command file present for selected plugin", "Whoops!"); }
+            catch (Exception) { MessageBox.Show("Something went wrong loading the selected plugin's Command file.", "Oh No!"); }
+
+            // Update the unloading array
+            if (unloadedPlugins.Contains(fileName))
+                unloadedPlugins.Remove(fileName);
 
             ofd.Dispose();
         }
