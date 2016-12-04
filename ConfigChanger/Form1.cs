@@ -31,7 +31,7 @@ namespace ConfigChanger
         private string pluginsConfig = @"plugins.cfg";
         private string pluginsDat = @"plugins.dat";
         private string guiConfigLocation = @"cfg\GUIConfig\";
-        private List<string> dirConfigFiles = new List<string>() { @"default.cfg", @"bindings.cfg", @"otherOptions.cfg", @"customCode.cfg", @"plugins.cfg" }; // Each plugin has it's own config file for advanced modularity
+        private List<string> dirConfigFiles = new List<string>() { @"default.cfg", @"bindings.cfg", @"customCode.cfg", @"plugins.cfg", @"otherOptions.cfg" }; // Each plugin has it's own config file for advanced modularity
         private List<string> loadedPlugins = new List<string>(); // All the plugins that have been loaded, grabbed from the plugins list and saved. Used for reading and writing to cfg file
         private List<string> unloadedPlugins = new List<string>(); // All the plugins that will be unloaded on the next configuration run
         List<string> commands = new List<string>();
@@ -201,7 +201,7 @@ namespace ConfigChanger
 
             try
             {
-                sw = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[2]);
+                sw = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[4]);
                 // Write the others tab
                 if (chkGameSpeed.Checked)
                     sw.WriteLine("bind " + cmbGameSpeed.SelectedItem.ToString() + " \"gamespeed " + gameSpeed + "\"");
@@ -285,8 +285,8 @@ namespace ConfigChanger
                 // Other Options (Game Speed, Map, perhaps boost amount?)
                 List<string> otherOps = new List<string>();
                 string v = "";
-                try { otherOps = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[2]).ToList(); }
-                catch (Exception) { MessageBox.Show("Something went wrong reading the other options config. Ensure that it is in '" + guiConfigLocation + dirConfigFiles[2] + "'", "Oops!"); return; }
+                try { otherOps = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[4]).ToList(); }
+                catch (Exception) { MessageBox.Show("Something went wrong reading the other options config. Ensure that it is in '" + guiConfigLocation + dirConfigFiles[4] + "'", "Oops!"); return; }
                 
                 foreach (string s in otherOps) v += s; 
 
@@ -420,7 +420,7 @@ namespace ConfigChanger
                 }
                 foreach (string s in dirConfigFiles) // Load the default config files
                 {
-                    string send = @"exec GUIConfig\" + s + @"{ENTER}";
+                    string send = @"exec GUIConfig\" + Path.GetFileNameWithoutExtension(s) + @"{ENTER}";
                     Console.WriteLine(send);
                     SendKeys.SendWait(send);
                 }
@@ -620,7 +620,7 @@ namespace ConfigChanger
         private void saveCustomCode()
         {
             string[] tmpCode = txtCustomConfig.Text.Split('\n');
-            StreamWriter sw = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[3]);
+            StreamWriter sw = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + guiConfigLocation + dirConfigFiles[2]);
             foreach (string s in tmpCode)
                 sw.WriteLine(s);
             sw.Flush();
