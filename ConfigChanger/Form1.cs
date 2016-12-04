@@ -448,7 +448,7 @@ namespace ConfigChanger
                 if (s.EndsWith(".bnd"))
                 {
                     // Make sure the plugin is loaded
-                    if (lstLoadedPlugins.Items.Contains(Path.GetFileNameWithoutExtension(s)))
+                    if (lstLoadedPlugins.Items.Contains(Path.GetFileNameWithoutExtension(s)) || s.EndsWith("GenericBindings.bnd"))
                     {
                         // Get commands
                         try
