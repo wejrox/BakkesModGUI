@@ -7,8 +7,8 @@
     <ProjectGuid>{4FB78A67-014F-4838-A003-A49ECBCD51BC}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ConfigChanger</RootNamespace>
-    <AssemblyName>ConfigChanger</AssemblyName>
+    <RootNamespace>BakkesModGUI</RootNamespace>
+    <AssemblyName>BakkesModGUI</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

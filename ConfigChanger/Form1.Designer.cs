@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.btnSave = new System.Windows.Forms.Button();
             this.cmbKey1 = new System.Windows.Forms.ComboBox();
             this.cmbKey2 = new System.Windows.Forms.ComboBox();
@@ -738,6 +739,7 @@
             this.Controls.Add(this.btnCommands);
             this.Controls.Add(this.btnLoad);
             this.Controls.Add(this.btnSave);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(600, 400);
             this.Name = "Form1";
             this.ShowIcon = false;

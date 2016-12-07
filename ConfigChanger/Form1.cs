@@ -312,13 +312,13 @@ namespace ConfigChanger
         // Loading the config in RocketLeague
         private void btnApplyConfig_Click(object sender, EventArgs e)
         {
-            if (Process.GetProcessesByName("BakkesModInjector.exe").Length == 0)
+            if (Process.GetProcessesByName("BakkesModInjector").Length == 0)
             {
                 MessageBox.Show("Injector must be running to apply the Configuration files");
                 return;
             }
 
-            if (Process.GetProcessesByName("rocketleague.exe").Length == 0)
+            if (Process.GetProcessesByName("rocketleague").Length == 0)
             {
                 MessageBox.Show("RocketLeague must be running to apply the Configuration files");
                 return;
