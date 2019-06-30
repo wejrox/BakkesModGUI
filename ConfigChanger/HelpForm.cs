@@ -10,19 +10,19 @@ using System.Windows.Forms;
 
 namespace ConfigChanger
 {
-    public partial class Form2 : Form
+    public partial class HelpForm : Form
     {
-        public Form2()
+        public HelpForm()
         {
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void btnClose_Click(object sender, EventArgs e)
         {
             Hide();
         }
 
-        private void Form2_Load(object sender, EventArgs e)
+        private void HelpForm_Load(object sender, EventArgs e)
         {
 
         }

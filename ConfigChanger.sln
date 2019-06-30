@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigChanger", "ConfigChanger\ConfigChanger.csproj", "{4FB78A67-014F-4838-A003-A49ECBCD51BC}"
 EndProject
@@ -26,13 +26,14 @@ Global
 		{76E77906-D8EB-4901-B4B9-CEA9E4D0701D}.Debug|Any CPU.ActiveCfg = Debug
 		{76E77906-D8EB-4901-B4B9-CEA9E4D0701D}.Debug|Default.ActiveCfg = Debug
 		{76E77906-D8EB-4901-B4B9-CEA9E4D0701D}.Debug|Default.Build.0 = Debug
-		{76E77906-D8EB-4901-B4B9-CEA9E4D0701D}.Release|Any CPU.ActiveCfg = Release
-		{76E77906-D8EB-4901-B4B9-CEA9E4D0701D}.Release|Any CPU.Build.0 = Release
-		{76E77906-D8EB-4901-B4B9-CEA9E4D0701D}.Release|Default.ActiveCfg = Release
-		{76E77906-D8EB-4901-B4B9-CEA9E4D0701D}.Release|Default.Build.0 = Release
+		{76E77906-D8EB-4901-B4B9-CEA9E4D0701D}.Release|Any CPU.ActiveCfg = Debug
+		{76E77906-D8EB-4901-B4B9-CEA9E4D0701D}.Release|Default.ActiveCfg = Debug
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {386294AF-900C-4A23-B51E-BFA734AB3293}
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
